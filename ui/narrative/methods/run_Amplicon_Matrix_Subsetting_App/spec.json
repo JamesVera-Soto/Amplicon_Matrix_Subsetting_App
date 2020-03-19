@@ -1,0 +1,104 @@
+{
+    "ver": "0.0.1",
+    "authors": [
+        "james_verasoto"
+    ],
+    "contact": "",
+    "categories": ["active"],
+    "widgets": {
+        "input": null,
+        "output": null
+    },
+    "parameters": [ 
+        {
+            "id": "input_obj_ref",
+            "optional": false,
+            "advanced": false,
+            "allow_multiple": false,
+            "default_values": [ "" ],
+            "field_type": "text",
+            "text_options": {
+                "valid_ws_types": ["KBaseMatrices.AmpliconMatrix"]
+            }
+        },
+        {
+            "id": "attribute_mapping_obj_ref",
+            "optional": false,
+            "advanced": false,
+            "allow_multiple": false,
+            "default_values": [ "" ],
+            "field_type": "text",
+            "text_options": {
+                "valid_ws_types": ["KBaseExperiments.AttributeMapping"]
+            }
+        },
+        {
+            "id": "meta_group",
+            "optional": false,
+            "advanced": false,
+            "allow_multiple": false,
+            "default_values": [ "" ],
+            "field_type": "textsubdata",
+            "textsubdata_options": {
+                "subdata_selection": {
+                    "parameter_id": "attri_mapping_ref",
+                    "subdata_included": ["attributes/[*]/attribute"],
+                    "path_to_subdata": ["attributes"],
+                    "selection_id": "attribute"
+                },
+                "multiselection": false,
+                "show_src_obj": false,
+                "allow_custom": false
+            }
+        }
+    ],
+    "parameter-groups": [
+        {
+            "id": "subset_field",
+            "parameters": [
+                "meta_group"
+            ],
+            "optional": false,
+            "allow_multiple": false,
+            "with_border": false,
+            "advanced" : false
+    }
+  ],
+    "behavior": {
+        "service-mapping": {
+            "url": "",
+            "name": "Amplicon_Matrix_Subsetting_App",
+            "method": "run_Amplicon_Matrix_Subsetting_App",
+            "input_mapping": [
+                {
+                    "narrative_system_variable": "workspace",
+                    "target_property": "workspace_name"
+                },{
+                    "narrative_system_variable": "workspace_id",
+                    "target_property": "workspace_id"
+                },{
+                    "input_parameter": "input_obj_ref",
+                    "target_property": "input_obj_ref",
+                    "target_type_transform": "resolved-ref"
+                },{
+                    "input_parameter": "attribute_mapping_obj_ref",
+                    "target_property": "attribute_mapping_obj_ref",
+                    "target_type_transform": "resolved-ref"
+                },{
+                    "input_parameter": "subset_field",
+                    "target_property": "subset_field"
+                }
+            ],
+            "output_mapping": [
+                {
+                    "service_method_output_path": [0,"report_name"],
+                    "target_property": "report_name"
+                },{
+                    "service_method_output_path": [0,"report_ref"],
+                    "target_property": "report_ref"
+                }
+            ]
+        }
+    },
+    "job_id_output_field": "docker"
+}

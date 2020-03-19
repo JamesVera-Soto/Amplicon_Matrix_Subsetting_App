@@ -1,0 +1,57 @@
+#
+# define display information
+#
+name: Amplicon Matrix Subsetting
+
+tooltip: |
+    Takes an AmpliconMatrix and creates multiple smaller matrices based on metadata.
+
+screenshots: []
+
+icon: icon.png
+
+#
+# define a set of similar apps that might be useful to the user
+#
+suggestions:
+    apps:
+        related:
+            [app1, app2]
+        next:
+            [app3, app4]
+
+#
+# Configure the display and description of parameters
+#
+parameters :
+    input_obj_ref:
+        ui-name: |
+            Amplicon Matrix
+        short-hint: |
+            AmpliconMatrix
+        long-hint: |
+            AmpliconMatrix
+
+        attribute_mapping_obj_ref:
+            ui-name: |
+                Metadata AttributeMapping
+            short-hint: |
+                AttributeMapping where metadata for grouping is stored.
+            long-hint: |
+                AttributeMapping where metadata for grouping is stored.
+
+        subset_field:
+            ui-name: |
+                Metadata Subsetting Column Name
+            short-hint: |
+                Name of the column in AttributeMapping metadata in which to subset by
+            long-hint: |
+                Name of the column in AttributeMapping metadata in which to subset by.
+
+parameter-groups :
+    grouping_label:
+        ui-name : Subset Field
+        short-hint :  Select an attribute for breaking AmpliconMatrix into smaller subset matrices
+
+description : |
+    <p> Takes an AmpliconMatrix and creates multiple smaller matrices based on metadata </p>
