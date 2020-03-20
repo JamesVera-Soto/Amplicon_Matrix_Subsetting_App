@@ -63,5 +63,14 @@ class Amplicon_Matrix_Subsetting_AppTest(unittest.TestCase):
         #
         # Check returned data with
         # self.assertEqual(ret[...], ...) or other unittest methods
-        ret = self.serviceImpl.run_Amplicon_Matrix_Subsetting_App(self.ctx, {'workspace_name': self.wsName,
-                                                             'parameter_1': 'Hello World!'})
+        ret = self.serviceImpl.run_Amplicon_Matrix_Subsetting_App(self.ctx,
+                                                                  {'workspace_name': self.wsName,
+                                                                   'input_obj_ref': '37967/3/2',
+                                                                   'attribute_mapping_obj_ref': '37967/4/1',
+                                                                   'subset_field': {
+                                                                    'meta_group': ['Field name (informal classification)']
+                                                                    }
+                                                                   })
+
+        mds_dir = '/kb/module/work/tmp/mds_output'
+        self.assertTrue(os.path.isfile(os.path.join(mds_dir, 'amp_set.fa')))

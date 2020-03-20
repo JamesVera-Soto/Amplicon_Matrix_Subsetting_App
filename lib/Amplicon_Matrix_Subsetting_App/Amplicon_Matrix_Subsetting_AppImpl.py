@@ -3,7 +3,7 @@
 import logging
 import os
 
-from Amplicon_Matrix_Subsetting_App.Amp_Subtset_Util import Subsetting_Matrices
+from Amplicon_Matrix_Subsetting_App.Amp_Subset_Util import Subsetting_Matrices
 
 from installed_clients.KBaseReportClient import KBaseReport
 #END_HEADER
@@ -37,7 +37,12 @@ class Amplicon_Matrix_Subsetting_App:
         #BEGIN_CONSTRUCTOR
         self.config = config
         self.callback_url = os.environ['SDK_CALLBACK_URL']
+        self.config['SDK_CALLBACK_URL'] = self.callback_url
+        self.config['KB_AUTH_TOKEN'] = os.environ['SDK_CALLBACK_URL']
         self.shared_folder = config['scratch']
+        logging.basicConfig(format='%(created)s %(levelname)s: %(message)s',
+                            level=logging.INFO)
+
         self.subsetting_matrices = Subsetting_Matrices(self.config)
 
         logging.basicConfig(format='%(created)s %(levelname)s: %(message)s',

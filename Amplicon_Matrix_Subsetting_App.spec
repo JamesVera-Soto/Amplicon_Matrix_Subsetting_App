@@ -9,10 +9,10 @@ module Amplicon_Matrix_Subsetting_App {
     } ReportResults;
 
     typedef structure {
-        obj_ref input_obj_ref;
-        obj_ref attribute_mapping_obj_ref;
+        string input_obj_ref;
+        string attribute_mapping_obj_ref;
         mapping<string, string> subset_field;
-    } Amp_Subset_Params
+    } Amp_Subset_Params;
 
     /*
         This example function accepts any number of parameters and returns results in a KBaseReport

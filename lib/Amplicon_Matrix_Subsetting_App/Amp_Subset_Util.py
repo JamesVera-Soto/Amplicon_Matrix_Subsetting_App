@@ -2,8 +2,9 @@ import pandas as pd
 import os
 import uuid
 import logging
+import json
 from installed_clients.WorkspaceClient import Workspace as Workspace
-from installed_clients.DataFIleUtilClient import DataFileUtil
+from installed_clients.DataFileUtilClient import DataFileUtil
 
 # Subsetting Class
 class Subsetting_Matrices:
@@ -16,27 +17,55 @@ class Subsetting_Matrices:
 
         self.dfu = DataFileUtil(self.callback_url)
 
+        # set up directory in scratch
+        self.output_dir = os.path.join(self.scratch, str(uuid.uuid4()))
+        os.mkdir(self.output_dir)
+        # set up directory for files folder
+        self.files_folder = os.path.join(self.output_dir, 'files')
+        os.mkdir(self.files_folder)
+
     def _get_df(self, params):
-        logging.info('Getting MatrixObject')
+        """
+        Get Amplicon Matrix Data then make Pandas.DataFrame(),
+        also get taxonomy data and add it to df.
+        """
+
+        logging.info('Getting DataObject')
+
         # Amplicon data
-        obj = self.dfu.get_objects({'object_refs': params.get('input_obj_ref')})
+        obj = self.dfu.get_objects({'object_refs': [params.get('input_obj_ref')]})
+        self._make_fasta(obj_ref=obj['data'][0]['data']['amplicon_set_ref'])
         amp_data = obj['data'][0]['data']
 
         row_ids = amp_data['data']['row_ids']
         col_ids = amp_data['data']['col_ids']
         values = amp_data['data']['values']
-
+        # Add 'taxonomy' column
+        col_ids.append('taxonomy')
         # Make pandas DataFrame
-        df = pd.DataFrame(values, index=row_ids, columns=col_ids)
-        df = df.T
+        df = pd.DataFrame(index=row_ids, columns=col_ids)
+        for i in range(len(row_ids)):
+            df.iloc[i, :-1] = values[i]
+
+        # Get object
+        test_row_attributes_permanent_id = obj['data'][0]['data']['row_attributemapping_ref']
+        obj = self.dfu.get_objects({'object_refs': [test_row_attributes_permanent_id]})
+        tax_dict = obj['data'][0]['data']['instances']
+
+        # Add taxonomy data and transpose matrix
+        for row_indx in df.index:
+            df.loc[row_indx]['taxonomy'] = tax_dict[row_indx][0]
+        df.to_csv(os.path.join(self.files_folder, "df.csv"), sep='\t')
         return df
 
     def _get_mdf(self, params):
+
         logging.info('Getting MetadataObject')
-        subsetting_field = params.get('subsetting_field')
+
+        subsetting_field = params.get('subset_field')
         subsetting_field = subsetting_field['meta_group'][0]
         # Get object
-        obj = self.dfu.get_objects({'object_refs': params.get('attribute_mapping_obj_ref')})
+        obj = self.dfu.get_objects({'object_refs': [params.get('attribute_mapping_obj_ref')]})
         meta_dict = obj['data'][0]['data']['instances']
         attr_l = obj['data'][0]['data']['attributes']
 
@@ -54,12 +83,60 @@ class Subsetting_Matrices:
         for key, val in meta_dict.items():
             mdf.iloc[i] = val[indx]
             i += 1
+        mdf.to_csv(os.path.join(self.files_folder, "mdf.csv"))
         return mdf
 
-    def create_subset_matrices(self, df, mdf):
-        pass
+    def insert_newlines(self, string, every):
+        return '\n'.join(string[i:i + every] for i in range(0, len(string), every))
+
+    def _make_fasta(self, obj_ref):
+
+        logging.info('Making fasta file from AmpliconSet obj: {}'.format(obj_ref))
+
+        set_obj = self.dfu.get_objects({'object_refs': [obj_ref]})
+        OTUs = set_obj['data'][0]['data']['amplicons'].keys()
+        with open(os.path.join(self.files_folder, "amp_set.fa"), 'w') as fa_file:
+
+            logging.info('Writing to amp_set.fa file')
+
+            for key in OTUs:
+                con_str = '>' + key + '\n'
+                con_str += self.insert_newlines(set_obj['data'][0]['data']['amplicons'][key]['consensus_sequence'], 60)
+                con_str += '\n'
+                fa_file.write(con_str)
+
+    def _make_group_dict(self, mdf, subset_field):
+
+        logging.info('Making grouping dictionary')
+
+        group_dict = {}
+        for sample in mdf.index:
+            group_name = mdf[subset_field].loc[sample]
+            try:
+                group_dict[group_name].append(sample)
+            except KeyError:
+                group_dict.update({group_name: [sample]})
+
+        return group_dict
+
+    def create_subset_matrices(self, df, mdf, subset_field):
+
+        logging.info('Creating matrices...')
+
+        group_dict = self._make_group_dict(mdf=mdf, subset_field=subset_field)
+
+        dict_of_sub_matrices = {}
+        for key, val in group_dict.items():
+            data = df[val]
+            dict_of_sub_matrices.update({key: data})
+
+        return dict_of_sub_matrices
 
     def run(self, params):
+
+        logging.info('--->\nrunning Amp_Subset_Util with input \n' +
+                     'params:\n{}'.format(json.dumps(params, indent=1)))
+
         df = self._get_df(params)
         mdf = self._get_mdf(params)
-        self.create_subset_matrices(df=df, mdf=mdf)
+        self.create_subset_matrices(df=df, mdf=mdf, subset_field=params.get('subset_field'))
