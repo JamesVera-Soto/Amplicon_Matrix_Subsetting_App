@@ -41,7 +41,7 @@
             "field_type": "textsubdata",
             "textsubdata_options": {
                 "subdata_selection": {
-                    "parameter_id": "attri_mapping_ref",
+                    "parameter_id": "attribute_mapping_obj_ref",
                     "subdata_included": ["attributes/[*]/attribute"],
                     "path_to_subdata": ["attributes"],
                     "selection_id": "attribute"
