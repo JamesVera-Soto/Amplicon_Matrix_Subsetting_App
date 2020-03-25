@@ -72,5 +72,5 @@ class Amplicon_Matrix_Subsetting_AppTest(unittest.TestCase):
                                                                     }
                                                                    })
 
-        mds_dir = '/kb/module/work/tmp/mds_output'
-        self.assertTrue(os.path.isfile(os.path.join(mds_dir, 'amp_set.fa')))
+        subsetting_dir = '/kb/module/work/tmp/subsetting_output'
+        self.assertTrue(os.path.isfile(os.path.join(subsetting_dir, 'amp_set.fa')))

@@ -3,11 +3,14 @@ import os
 import uuid
 import logging
 import json
+import zipfile
 from installed_clients.WorkspaceClient import Workspace as Workspace
 from installed_clients.DataFileUtilClient import DataFileUtil
 
 # Subsetting Class
 class Subsetting_Matrices:
+
+    SUBSET_OUT_DIR = 'subsetting_output'
 
     def __init__(self, config):
         self.ws_url = config["workspace-url"]
@@ -18,11 +21,16 @@ class Subsetting_Matrices:
         self.dfu = DataFileUtil(self.callback_url)
 
         # set up directory in scratch
-        self.output_dir = os.path.join(self.scratch, str(uuid.uuid4()))
-        os.mkdir(self.output_dir)
+        self.output_dir = os.path.join(self.scratch, self.SUBSET_OUT_DIR)
+        try:
+            os.mkdir(self.output_dir)
+        except FileExistsError:
+            pass
         # set up directory for files folder
-        self.files_folder = os.path.join(self.output_dir, 'files')
+        self.files_folder = os.path.join(self.scratch, str(uuid.uuid4()))
         os.mkdir(self.files_folder)
+
+        self.file_paths = []
 
     def _get_df(self, params):
         """
@@ -55,15 +63,18 @@ class Subsetting_Matrices:
         # Add taxonomy data and transpose matrix
         for row_indx in df.index:
             df.loc[row_indx]['taxonomy'] = tax_dict[row_indx][0]
-        df.to_csv(os.path.join(self.files_folder, "df.csv"), sep='\t')
         return df
 
     def _get_mdf(self, params):
+        """
+        Get metadata object and make pd.DataFrame from with samples as index and specified subsetting column
+        """
 
         logging.info('Getting MetadataObject')
 
         subsetting_field = params.get('subset_field')
         subsetting_field = subsetting_field['meta_group'][0]
+        params['subset_field'] = subsetting_field
         # Get object
         obj = self.dfu.get_objects({'object_refs': [params.get('attribute_mapping_obj_ref')]})
         meta_dict = obj['data'][0]['data']['instances']
@@ -83,7 +94,6 @@ class Subsetting_Matrices:
         for key, val in meta_dict.items():
             mdf.iloc[i] = val[indx]
             i += 1
-        mdf.to_csv(os.path.join(self.files_folder, "mdf.csv"))
         return mdf
 
     def insert_newlines(self, string, every):
@@ -95,7 +105,7 @@ class Subsetting_Matrices:
 
         set_obj = self.dfu.get_objects({'object_refs': [obj_ref]})
         OTUs = set_obj['data'][0]['data']['amplicons'].keys()
-        with open(os.path.join(self.files_folder, "amp_set.fa"), 'w') as fa_file:
+        with open(os.path.join(self.output_dir, "amp_set.fa"), 'w') as fa_file:
 
             logging.info('Writing to amp_set.fa file')
 
@@ -106,20 +116,25 @@ class Subsetting_Matrices:
                 fa_file.write(con_str)
 
     def _make_group_dict(self, mdf, subset_field):
+        """
+        Make dictionary with a subsetting column value as key and samples of that subsetting column value and values
+        """
 
         logging.info('Making grouping dictionary')
 
         group_dict = {}
-        for sample in mdf.index:
-            group_name = mdf[subset_field].loc[sample]
+        for sample, group in zip(mdf.index, mdf[subset_field]):
             try:
-                group_dict[group_name].append(sample)
+                group_dict[group].append(sample)
             except KeyError:
-                group_dict.update({group_name: [sample]})
+                group_dict.update({group: [sample]})
 
         return group_dict
 
-    def create_subset_matrices(self, df, mdf, subset_field):
+    def _create_subset_matrices(self, df, mdf, subset_field):
+        """
+        create dictionary of subset pd.DataFrames
+        """
 
         logging.info('Creating matrices...')
 
@@ -132,6 +147,46 @@ class Subsetting_Matrices:
 
         return dict_of_sub_matrices
 
+    def _save_matrices(self, matrices):
+        """
+        takes a dictionary of matrices and saves the matrices as tab sep csv's, with the name being keys
+        """
+
+        logging.info('Saving matrices: {}'.format(matrices.keys()))
+
+        for group, matrix in matrices.items():
+            name = group+'.csv'
+            matrix.to_csv(os.path.join(self.output_dir, name), sep='\t')
+
+        self._zip_folder(self.output_dir, os.path.join(self.files_folder, 'Subsetting_output.zip'))
+
+        self.file_paths.append(os.path.join(self.files_folder, 'Subsetting_output.zip'))
+
+    def _zip_folder(self, folder_path, output_path):
+        """
+        _zip_folder: Zip the contents of an entire folder (with that folder included in the
+         archive). Empty subfolders could be included in the archive as well if the 'Included
+         all subfolders, including empty ones' portion.
+         portion is used.
+        """
+        with zipfile.ZipFile(output_path, 'w',
+                             zipfile.ZIP_DEFLATED,
+                             allowZip64=True) as ziph:
+            for root, folders, files in os.walk(folder_path):
+                # Include all subfolders, including empty ones.
+                for folder_name in folders:
+                    absolute_fpath = os.path.join(root, folder_name)
+                    relative_fpath = os.path.join(os.path.basename(root), folder_name)
+                    logging.info("Adding folder {} to archive.".format(absolute_fpath))
+                    ziph.write(absolute_fpath, relative_fpath)
+                for f in files:
+                    absolute_path = os.path.join(root, f)
+                    relative_path = os.path.join(os.path.basename(root), f)
+                    logging.info("Adding file {} to archive.".format(absolute_path))
+                    ziph.write(absolute_path, relative_path)
+
+        logging.info("{} created successfully.".format(output_path))
+
     def run(self, params):
 
         logging.info('--->\nrunning Amp_Subset_Util with input \n' +
@@ -139,4 +194,8 @@ class Subsetting_Matrices:
 
         df = self._get_df(params)
         mdf = self._get_mdf(params)
-        self.create_subset_matrices(df=df, mdf=mdf, subset_field=params.get('subset_field'))
+        matrices = self._create_subset_matrices(df=df, mdf=mdf, subset_field=params.get('subset_field'))
+        self._save_matrices(matrices)
+        return {
+            'file_paths': self.file_paths
+        }
