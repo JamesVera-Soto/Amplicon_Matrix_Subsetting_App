@@ -4,9 +4,10 @@
         "james_verasoto"
     ],
     "contact": "",
+    "visible" : true,
     "categories": ["active"],
     "widgets": {
-        "input": null,
+        "input": "kbaseNarrativeMethodInput",
         "output": "no-display"
     },
     "parameters": [ 
