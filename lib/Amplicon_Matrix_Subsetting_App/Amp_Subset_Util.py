@@ -11,8 +11,6 @@ from installed_clients.DataFileUtilClient import DataFileUtil
 # Subsetting Class
 class Subsetting_Matrices:
 
-    SUBSET_OUT_DIR = 'subsetting_output'
-
     def __init__(self, config):
         self.ws_url = config["workspace-url"]
         self.callback_url = config['SDK_CALLBACK_URL']
@@ -21,14 +19,10 @@ class Subsetting_Matrices:
 
         self.dfu = DataFileUtil(self.callback_url)
 
-        # set up directory in scratch
-        self.output_dir = os.path.join(self.scratch, self.SUBSET_OUT_DIR)
-        try:
-            os.mkdir(self.output_dir)
-        except FileExistsError:
-            pass
         # set up directory for files folder
-        self.files_folder = os.path.join(self.scratch, str(uuid.uuid4()))
+        self.output_dir = os.path.join(self.scratch, str(uuid.uuid4()))
+        os.mkdir(self.output_dir)
+        self.files_folder = os.path.join(self.output_dir, 'files')
         os.mkdir(self.files_folder)
 
         self.file_paths = []
@@ -107,7 +101,7 @@ class Subsetting_Matrices:
 
         set_obj = self.dfu.get_objects({'object_refs': [obj_ref]})
         OTUs = set_obj['data'][0]['data']['amplicons'].keys()
-        with open(os.path.join(self.output_dir, "amp_set.fa"), 'w') as fa_file:
+        with open(os.path.join(self.files_folder, "amp_set.fa"), 'w') as fa_file:
 
             logging.info('Writing to amp_set.fa file')
 
@@ -158,36 +152,7 @@ class Subsetting_Matrices:
 
         for group, matrix in matrices.items():
             name = group+'.csv'
-            matrix.to_csv(os.path.join(self.output_dir, name), sep='\t')
-
-        self._zip_folder(self.output_dir, os.path.join(self.files_folder, 'Subsetting_output.zip'))
-
-        self.file_paths.append(os.path.join(self.files_folder, 'Subsetting_output.zip'))
-
-    def _zip_folder(self, folder_path, output_path):
-        """
-        _zip_folder: Zip the contents of an entire folder (with that folder included in the
-         archive). Empty subfolders could be included in the archive as well if the 'Included
-         all subfolders, including empty ones' portion.
-         portion is used.
-        """
-        with zipfile.ZipFile(output_path, 'w',
-                             zipfile.ZIP_DEFLATED,
-                             allowZip64=True) as ziph:
-            for root, folders, files in os.walk(folder_path):
-                # Include all subfolders, including empty ones.
-                for folder_name in folders:
-                    absolute_fpath = os.path.join(root, folder_name)
-                    relative_fpath = os.path.join(os.path.basename(root), folder_name)
-                    logging.info("Adding folder {} to archive.".format(absolute_fpath))
-                    ziph.write(absolute_fpath, relative_fpath)
-                for f in files:
-                    absolute_path = os.path.join(root, f)
-                    relative_path = os.path.join(os.path.basename(root), f)
-                    logging.info("Adding file {} to archive.".format(absolute_path))
-                    ziph.write(absolute_path, relative_path)
-
-        logging.info("{} created successfully.".format(output_path))
+            matrix.to_csv(os.path.join(self.files_folder, name), sep='\t')
 
     def _create_html_report(self):
         """
@@ -205,18 +170,20 @@ class Subsetting_Matrices:
                     html_str += '<p>' + f + '</p>\n'
         html_str += '</html>'
 
-        with open(os.path.join(self.output_dir, "index.html"), 'w') as index_file:
+        with open(os.path.join(self.files_folder, "index.html"), 'w') as index_file:
             index_file.write(html_str)
 
-            # have needed files saved to folder before shock
-            shock = self.dfu.file_to_shock({'file_path': self.output_dir,
-                                            'make_handle': 0,
-                                            'pack': 'zip'})
-            # list that goes to 'html_links'
-            self.html_paths.append({'shock_id': shock['shock_id'],
-                                    'name': 'index.html',
-                                    'label': 'html files',
-                                    'description': "desc"})
+        # have needed files saved to folder before shock
+        shock = self.dfu.file_to_shock({'file_path': self.files_folder,
+                                        'make_handle': 0,
+                                        'pack': 'zip'})
+        # list that goes to 'html_links'
+        self.html_paths.append({'shock_id': shock['shock_id'],
+                                'name': 'index.html',
+                                'label': 'Report',
+                                'description': "files in zip"})
+        # list that goes to 'file_pahts'
+        self.file_paths.append(os.path.join(self.files_folder, 'files.zip'))
 
     def run(self, params):
 
