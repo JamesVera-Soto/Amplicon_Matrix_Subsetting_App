@@ -75,6 +75,7 @@ class Amplicon_Matrix_Subsetting_App:
         report_name = "Amplicon_Matrix_Subsetting_report_" + str(uuid.uuid4())
         report_info = report_client.create_extended_report({
             'direct_html_link_index': 0,
+            'html_links': paths['html_paths'],
             'file_links': file_links,
             'report_object_name': report_name,
             'workspace_name': params['workspace_name']

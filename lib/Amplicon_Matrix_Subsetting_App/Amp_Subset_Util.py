@@ -4,6 +4,7 @@ import uuid
 import logging
 import json
 import zipfile
+import re
 from installed_clients.WorkspaceClient import Workspace as Workspace
 from installed_clients.DataFileUtilClient import DataFileUtil
 
@@ -31,6 +32,7 @@ class Subsetting_Matrices:
         os.mkdir(self.files_folder)
 
         self.file_paths = []
+        self.html_paths = []
 
     def _get_df(self, params):
         """
@@ -149,7 +151,7 @@ class Subsetting_Matrices:
 
     def _save_matrices(self, matrices):
         """
-        takes a dictionary of matrices and saves the matrices as tab sep csv's, with the name being keys
+        takes a dictionary of pd.matrices and saves the matrices as tab sep csv's, with the name being keys
         """
 
         logging.info('Saving matrices: {}'.format(matrices.keys()))
@@ -187,6 +189,35 @@ class Subsetting_Matrices:
 
         logging.info("{} created successfully.".format(output_path))
 
+    def _create_html_report(self):
+        """
+        Create html report of files in zip by walking through output folder
+        """
+
+        logging.info('Creating html report..')
+
+        html_str = '<html>'
+        html_str += '<h3>Files In Output Zip File:</h3>\n'
+        for root, folders, files in os.walk(self.output_dir):
+            # Find the image files by their extensions.
+            for f in files:
+                if re.match('^[a-zA-Z]+.*.(fa|csv)$', f):  # jpeg|jpg|bmp|png|tiff|pdf|ps|
+                    html_str += '<p>' + f + '</p>\n'
+        html_str += '</html>'
+
+        with open(os.path.join(self.output_dir, "index.html"), 'w') as index_file:
+            index_file.write(html_str)
+
+            # have needed files saved to folder before shock
+            shock = self.dfu.file_to_shock({'file_path': self.output_dir,
+                                            'make_handle': 0,
+                                            'pack': 'zip'})
+            # list that goes to 'html_links'
+            self.html_paths.append({'shock_id': shock['shock_id'],
+                                    'name': 'index.html',
+                                    'label': 'html files',
+                                    'description': "desc"})
+
     def run(self, params):
 
         logging.info('--->\nrunning Amp_Subset_Util with input \n' +
@@ -196,6 +227,8 @@ class Subsetting_Matrices:
         mdf = self._get_mdf(params)
         matrices = self._create_subset_matrices(df=df, mdf=mdf, subset_field=params.get('subset_field'))
         self._save_matrices(matrices)
+        self._create_html_report()
         return {
-            'file_paths': self.file_paths
+            'file_paths': self.file_paths,
+            'html_paths': self.html_paths
         }

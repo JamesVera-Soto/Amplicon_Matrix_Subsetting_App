@@ -54,4 +54,6 @@ parameter-groups :
         short-hint :  Select an attribute for breaking AmpliconMatrix into smaller subset matrices
 
 description : |
-    <p> Takes an AmpliconMatrix and creates multiple smaller matrices based on metadata </p>
+    <p> Takes an AmpliconMatrix and creates multiple smaller matrices based on metadata. </p>
+
+    <p> Outputs a zip file containing a fasta file, and tab separated csv files of the sub-matrices </p>
