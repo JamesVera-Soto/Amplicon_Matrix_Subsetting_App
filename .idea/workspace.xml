@@ -1,8 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="00ba8872-4933-41eb-8c06-f8b744ed4bef" name="Default Changelist" comment="report no output cell try 2">
+    <list default="true" id="00ba8872-4933-41eb-8c06-f8b744ed4bef" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/lib/installed_clients/GenericsAPIClient.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/data/amp_set.fa" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/data/mineral soil.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/data/organic soil.csv" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test/data/rhizosphere soil.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/dependencies.json" beforeDir="false" afterPath="$PROJECT_DIR$/dependencies.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/Amplicon_Matrix_Subsetting_App/Amp_Subset_Util.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/Amplicon_Matrix_Subsetting_App/Amp_Subset_Util.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/Amplicon_Matrix_Subsetting_App_server_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/Amplicon_Matrix_Subsetting_App_server_test.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ui/narrative/methods/run_Amplicon_Matrix_Subsetting_App/spec.json" beforeDir="false" afterPath="$PROJECT_DIR$/ui/narrative/methods/run_Amplicon_Matrix_Subsetting_App/spec.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -85,7 +94,14 @@
       <option name="project" value="LOCAL" />
       <updated>1585605634246</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="report no output cell try 2">
+      <created>1585606491975</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1585606491975</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -108,12 +124,13 @@
     <MESSAGE value="ui parameter fix" />
     <MESSAGE value="report" />
     <MESSAGE value="report no output cell" />
-    <option name="LAST_COMMIT_MESSAGE" value="report no output cell" />
+    <MESSAGE value="report no output cell try 2" />
+    <option name="LAST_COMMIT_MESSAGE" value="report no output cell try 2" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="543" y="154" width="891" height="916" key="CommitChangelistDialog2" timestamp="1585606255252">
+    <state x="543" y="154" width="891" height="916" key="CommitChangelistDialog2" timestamp="1585606491673">
       <screen x="67" y="27" width="1853" height="1173" />
     </state>
-    <state x="543" y="154" width="891" height="916" key="CommitChangelistDialog2/67.27.1853.1173@67.27.1853.1173" timestamp="1585606255252" />
+    <state x="543" y="154" width="891" height="916" key="CommitChangelistDialog2/67.27.1853.1173@67.27.1853.1173" timestamp="1585606491673" />
   </component>
 </project>

@@ -3,10 +3,10 @@ import os
 import uuid
 import logging
 import json
-import zipfile
 import re
 from installed_clients.WorkspaceClient import Workspace as Workspace
 from installed_clients.DataFileUtilClient import DataFileUtil
+from installed_clients.GenericsAPIClient import GenericsAPI
 
 # Subsetting Class
 class Subsetting_Matrices:
@@ -27,6 +27,8 @@ class Subsetting_Matrices:
 
         self.file_paths = []
         self.html_paths = []
+
+        self.GenAPI = GenericsAPI(self.callback_url)
 
     def _get_df(self, params):
         """
@@ -185,6 +187,48 @@ class Subsetting_Matrices:
         # list that goes to 'file_pahts'
         self.file_paths.append(os.path.join(self.files_folder, 'files.zip'))
 
+    def _call_and_create_objects(self, params):
+
+        logging.info('_call_and_create_objects method')
+
+        list_of_matrix_files = []
+        groups = []
+        for root, folders, files in os.walk(self.files_folder):
+
+            logging.info('Finding files..')
+
+            # Find the image files by their extensions.
+            for f in files:
+                if re.match('^[a-zA-Z]+.*.(fa)$', f):
+                    fa_file = f
+                if re.match('^[a-zA-Z]+.*.(csv)$', f):
+                    groups.append(f[0:-4])
+                    list_of_matrix_files.append(f)
+
+        for csv_file_path, group_name in zip(list_of_matrix_files, groups):
+
+            logging.info('Sending data to importer:\n'
+                         'csv_file_path: {}\n'
+                         'group_name: {}\n'
+                         'fa_file: {}'.format(csv_file_path, group_name, fa_file))
+
+            params['obj_type'] = 'AmpliconMatrix'
+            params['matrix_name'] = group_name
+            params['tsv_fasta'] = {
+                'tsv_file_tsv_fasta': csv_file_path,
+                'fasta_file_tsv_fasta': fa_file,
+                'metadata_keys_tsv_fasta': 'taxonomy_id, taxonomy, taxonomy_source, consensus_sequence'
+            }
+            params['scale'] = 'raw'
+            params['description'] = 'dsc'
+            params['amplicon_set_name'] = group_name+'-set'
+            params['sample_set_ref'] = params.get('attribute_mapping_obj_ref')
+
+            logging.info('Sending params: {}'.format(json.dumps(params, indent=1)))
+
+            obj_run = self.GenAPI.import_matrix_from_biom(params=params)
+            logging.info('Object run: {}'.format(obj_run))
+
     def run(self, params):
 
         logging.info('--->\nrunning Amp_Subset_Util with input \n' +
@@ -195,7 +239,50 @@ class Subsetting_Matrices:
         matrices = self._create_subset_matrices(df=df, mdf=mdf, subset_field=params.get('subset_field'))
         self._save_matrices(matrices)
         self._create_html_report()
+        self._call_and_create_objects(params)
+
         return {
             'file_paths': self.file_paths,
             'html_paths': self.html_paths
         }
+
+
+"""
+    arguments:
+    obj_type: one of ExpressionMatrix, FitnessMatrix, DifferentialExpressionMatrix
+    matrix_name: matrix object name
+    workspace_name: workspace name matrix object to be saved to
+    input_shock_id: file shock id
+    or
+    input_file_path: absolute file path
+    or
+    input_staging_file_path: staging area file path
+
+    optional arguments:
+    col_attributemapping_ref: column AttributeMapping reference
+    row_attributemapping_ref: row AttributeMapping reference
+    genome_ref: genome reference
+    matrix_obj_ref: Matrix reference
+"""
+
+'''   
+typedef structure {
+      string obj_type;
+      string input_shock_id;
+      string input_file_path;
+      string input_staging_file_path;
+      string matrix_name;
+      string amplicon_set_name;
+      string scale;
+      string description;
+      workspace_name workspace_name;
+
+      obj_ref genome_ref;
+      obj_ref col_attributemapping_ref;
+      obj_ref row_attributemapping_ref;
+      obj_ref diff_expr_matrix_ref;
+      obj_ref biochemistry_ref;
+      obj_ref reads_set_ref;
+      obj_ref sample_set_ref;
+  } ImportMatrixParams;
+'''

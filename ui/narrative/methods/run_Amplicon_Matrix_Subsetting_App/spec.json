@@ -1,8 +1,6 @@
 {
     "ver": "0.0.1",
-    "authors": [
-        "james_verasoto"
-    ],
+    "authors": ["james_verasoto", "weise"],
     "contact": "",
     "visible" : true,
     "categories": ["active"],

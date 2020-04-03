@@ -9,6 +9,8 @@ from Amplicon_Matrix_Subsetting_App.Amplicon_Matrix_Subsetting_AppServer import 
 from Amplicon_Matrix_Subsetting_App.authclient import KBaseAuth as _KBaseAuth
 
 from installed_clients.WorkspaceClient import Workspace
+from installed_clients.DataFileUtilClient import DataFileUtil
+from mock import patch
 
 
 class Amplicon_Matrix_Subsetting_AppTest(unittest.TestCase):
@@ -52,8 +54,17 @@ class Amplicon_Matrix_Subsetting_AppTest(unittest.TestCase):
             cls.wsClient.delete_workspace({'workspace': cls.wsName})
             print('Test workspace was deleted')
 
+    def mock_download_staging_file(params):
+        print('Mocking DataFileUtilClient.download_staging_file')
+        print(params)
+
+        file_path = params.get('staging_file_subdir_path')
+
+        return {'copy_file_path': file_path}
+
     # NOTE: According to Python unittest naming rules test method names should start from 'test'. # noqa
-    def test_your_method(self):
+    @patch.object(DataFileUtil, "download_staging_file", side_effect=mock_download_staging_file)
+    def test_your_method(self, download_staging_file):
         # Prepare test objects in workspace if needed using
         # self.getWsClient().save_objects({'workspace': self.getWsName(),
         #                                  'objects': []})
