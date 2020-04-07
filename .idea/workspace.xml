@@ -2,17 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="00ba8872-4933-41eb-8c06-f8b744ed4bef" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/lib/installed_clients/GenericsAPIClient.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test/data/amp_set.fa" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test/data/mineral soil.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test/data/organic soil.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test/data/rhizosphere soil.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/dependencies.json" beforeDir="false" afterPath="$PROJECT_DIR$/dependencies.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/Amplicon_Matrix_Subsetting_App/Amp_Subset_Util.py" beforeDir="false" afterPath="$PROJECT_DIR$/lib/Amplicon_Matrix_Subsetting_App/Amp_Subset_Util.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/Amplicon_Matrix_Subsetting_App_server_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/test/Amplicon_Matrix_Subsetting_App_server_test.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/narrative/methods/run_Amplicon_Matrix_Subsetting_App/spec.json" beforeDir="false" afterPath="$PROJECT_DIR$/ui/narrative/methods/run_Amplicon_Matrix_Subsetting_App/spec.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -101,7 +93,14 @@
       <option name="project" value="LOCAL" />
       <updated>1585606491975</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="attempting to create objects">
+      <created>1585937599188</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1585937599188</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -125,12 +124,13 @@
     <MESSAGE value="report" />
     <MESSAGE value="report no output cell" />
     <MESSAGE value="report no output cell try 2" />
-    <option name="LAST_COMMIT_MESSAGE" value="report no output cell try 2" />
+    <MESSAGE value="attempting to create objects" />
+    <option name="LAST_COMMIT_MESSAGE" value="attempting to create objects" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="543" y="154" width="891" height="916" key="CommitChangelistDialog2" timestamp="1585606491673">
+    <state x="543" y="154" width="891" height="916" key="CommitChangelistDialog2" timestamp="1585937598330">
       <screen x="67" y="27" width="1853" height="1173" />
     </state>
-    <state x="543" y="154" width="891" height="916" key="CommitChangelistDialog2/67.27.1853.1173@67.27.1853.1173" timestamp="1585606491673" />
+    <state x="543" y="154" width="891" height="916" key="CommitChangelistDialog2/67.27.1853.1173@67.27.1853.1173" timestamp="1585937598330" />
   </component>
 </project>

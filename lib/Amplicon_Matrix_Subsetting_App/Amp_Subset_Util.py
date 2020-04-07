@@ -127,6 +127,9 @@ class Subsetting_Matrices:
             except KeyError:
                 group_dict.update({group: [sample]})
 
+        for group, sample_list in group_dict.items():
+            group_dict[group].append('taxonomy')
+
         return group_dict
 
     def _create_subset_matrices(self, df, mdf, subset_field):
@@ -138,10 +141,19 @@ class Subsetting_Matrices:
 
         group_dict = self._make_group_dict(mdf=mdf, subset_field=subset_field)
 
+        # Create dict of sub matrices
         dict_of_sub_matrices = {}
         for key, val in group_dict.items():
             data = df[val]
             dict_of_sub_matrices.update({key: data})
+
+        # Drop rows that have all zero counts
+        for key, matrix in dict_of_sub_matrices.items():
+            to_drop = []
+            for indx in matrix.index:
+                if all(val == 0 for val in matrix.loc[indx][0:-1]):
+                    to_drop.append(indx)
+            dict_of_sub_matrices[key] = matrix.drop(to_drop)
 
         return dict_of_sub_matrices
 
@@ -200,10 +212,10 @@ class Subsetting_Matrices:
             # Find the image files by their extensions.
             for f in files:
                 if re.match('^[a-zA-Z]+.*.(fa)$', f):
-                    fa_file = f
+                    fa_file = os.path.join(root, f)
                 if re.match('^[a-zA-Z]+.*.(csv)$', f):
                     groups.append(f[0:-4])
-                    list_of_matrix_files.append(f)
+                    list_of_matrix_files.append(os.path.join(root, f))
 
         for csv_file_path, group_name in zip(list_of_matrix_files, groups):
 
@@ -223,11 +235,34 @@ class Subsetting_Matrices:
             params['description'] = 'dsc'
             params['amplicon_set_name'] = group_name+'-set'
             params['sample_set_ref'] = params.get('attribute_mapping_obj_ref')
+            params['input_local_file'] = True
 
             logging.info('Sending params: {}'.format(json.dumps(params, indent=1)))
 
             obj_run = self.GenAPI.import_matrix_from_biom(params=params)
             logging.info('Object run: {}'.format(obj_run))
+
+    def _create_amp(self):
+
+        amp_structure = {'data': [{'data': {'amplicon_set_ref': '',
+                                            'col_attributemapping_ref': '',
+                                            'col_mapping': {},
+                                            'data': {},
+                                            'row_attributemapping_ref': '',
+                                            'row_mapping': {},
+                                            'scale': 'raw'},
+                                  'info': [
+
+                                  ],
+                                  'path': [''],
+                                  'provenance': [],
+                                  'creator': '',
+                                  'orig_wsid': 0000,
+                                  'created': '',
+                                  'epoch': 0000,
+                                  'refs': [],
+                                  'copy_source_inaccessible': 0,
+                                  'extracted_ids': {}}]}
 
     def run(self, params):
 
